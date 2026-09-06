@@ -1,0 +1,40 @@
+{
+	"geode": "4.0.0",
+	"gd": {
+		"win": "2.2074",
+		"mac": "2.2074",
+		"android": "2.2074"
+	},
+	"version": "v1.0.0",
+	"id": "jeevin.level-link",
+	"name": "Level Link",
+	"developer": "jeevin",
+	"description": "Link two versions of a level (e.g. a StartPos copy and the rated version) and swap between them straight from the pause menu.",
+	"tags": ["gameplay", "utility"],
+	"dependencies": {
+		"geode.custom-keybinds": {
+			"version": ">=v1.7.0",
+			"importance": "required"
+		}
+	},
+	"settings": {
+		"confirm-switch": {
+			"name": "Confirm Before Switching",
+			"description": "Show a yes/no popup before swapping to the linked level.",
+			"type": "bool",
+			"default": false
+		},
+		"match-position": {
+			"name": "Match Position (Experimental)",
+			"description": "Attempt to drop the player at the same X position in the linked level after switching. Physics, triggers and moving objects are NOT simulated, so this is visual-only and should never be used for legitimate leaderboard runs.",
+			"type": "bool",
+			"default": false
+		},
+		"precache": {
+			"name": "Pre-download Linked Levels",
+			"description": "Download the linked online level in the background when you open a level page, so switching later is instant.",
+			"type": "bool",
+			"default": true
+		}
+	}
+}
