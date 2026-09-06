@@ -38,6 +38,7 @@ void LinkManager::requestSwitch(GJGameLevel* current) {
         Notification::create("This level has no linked level", NotificationIcon::Warning)->show();
         return;
     }
+    log::info("Level Link: switch requested (linked -> {}:{}/{})", link->kind, link->id, link->name);
 
     m_pendingMatchX = 0.f;
     if (Mod::get()->getSettingValue<bool>("match-position")) {
@@ -49,6 +50,7 @@ void LinkManager::requestSwitch(GJGameLevel* current) {
     auto start = [this, ref = *link]() {
         if (ref.isOnline()) {
             if (auto cached = GameLevelManager::get()->getSavedLevel(ref.id)) {
+                log::info("Level Link: linked online level {} already cached", ref.id);
                 this->doSwitch(cached);
                 return;
             }
@@ -80,6 +82,7 @@ void LinkManager::requestSwitch(GJGameLevel* current) {
 void LinkManager::levelDownloadFinished(GJGameLevel* level) {
     GameLevelManager::get()->m_levelDownloadDelegate = nullptr;
     if (std::exchange(m_switchAfterDownload, false)) {
+        log::info("Level Link: linked level download finished, switching");
         this->doSwitch(level);
     }
 }
@@ -94,22 +97,44 @@ void LinkManager::levelDownloadFailed(int reason) {
 
 void LinkManager::doSwitch(GJGameLevel* target) {
     if (!target) return;
+
+    // Keep the level object alive across the deferred frames.
+    Ref<GJGameLevel> level = target;
     const float matchX = std::exchange(m_pendingMatchX, 0.f);
+    m_switchAfterDownload = false;
 
-    Loader::get()->queueInMainThread([target, matchX]() {
-        CCDirector::sharedDirector()->replaceScene(PlayLayer::scene(target, false, false));
+    log::info("Level Link: switching to \"{}\" (id {}, type {})", std::string(target->m_levelName),
+              target->m_levelID.value(), static_cast<int>(target->m_levelType));
 
-        if (matchX > 1.f) {
-            // EXPERIMENTAL: raw teleport a couple of frames after load. Triggers /
-            // moving objects are not simulated - visual only, never for leaderboard runs.
-            Loader::get()->queueInMainThread([matchX]() {
-                Loader::get()->queueInMainThread([matchX]() {
-                    if (auto pl = PlayLayer::get(); pl && pl->m_player1) {
-                        pl->m_player1->setPositionX(matchX);
-                    }
-                });
-            });
+    Loader::get()->queueInMainThread([level, matchX]() {
+        // 1. Dismiss the pause menu first - otherwise its teardown runs against
+        //    the freshly-created PlayLayer and death-effect mods crash.
+        if (auto scene = CCScene::get()) {
+            while (auto pause = scene->getChildByType<PauseLayer>(0)) {
+                pause->removeFromParentAndCleanup(true);
+            }
         }
+
+        // 2. Fully tear down the current level before building the new one, so
+        //    GameManager::m_playLayer / PlayLayer::get() never point at a
+        //    half-constructed layer during the overlap.
+        CCDirector::sharedDirector()->replaceScene(CCScene::create());
+
+        // 3. Next frame (old PlayLayer now destroyed): build + enter the new level.
+        Loader::get()->queueInMainThread([level, matchX]() {
+            auto scene = PlayLayer::scene(level, false, false);
+            CCDirector::sharedDirector()->replaceScene(CCTransitionFade::create(0.4f, scene));
+
+            if (matchX > 1.f && Mod::get()->getSettingValue<bool>("match-position")) {
+                Loader::get()->queueInMainThread([matchX]() {
+                    Loader::get()->queueInMainThread([matchX]() {
+                        if (auto pl = PlayLayer::get(); pl && pl->m_player1) {
+                            pl->m_player1->setPositionX(matchX);
+                        }
+                    });
+                });
+            }
+        });
     });
 }
 
