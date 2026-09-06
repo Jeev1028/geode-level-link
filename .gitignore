@@ -1,7 +1,3 @@
 build/
-build-*/
-out/
+.geode/
 *.geode
-.cache/
-.DS_Store
-CMakeUserPresets.json
