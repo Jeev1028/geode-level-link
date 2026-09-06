@@ -12,10 +12,7 @@
 	"description": "Link two versions of a level and swap between them from the pause menu.",
 	"tags": ["gameplay", "utility"],
 	"dependencies": {
-		"geode.node-ids": {
-			"version": ">=v1.20.0",
-			"importance": "required"
-		}
+		"geode.node-ids": ">=v1.20.0"
 	},
 	"settings": {
 		"switch-key": {
