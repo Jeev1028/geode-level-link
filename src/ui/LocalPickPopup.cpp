@@ -1,51 +1,57 @@
 #include "LocalPickPopup.hpp"
 
+#include <Geode/Geode.hpp>
+
 using namespace geode::prelude;
 
-bool LocalPickPopup::setup(std::function<void(GJGameLevel*)> cb) {
+namespace {
+constexpr float POPUP_W = 320.f;
+constexpr float POPUP_H = 250.f;
+}  // namespace
+
+bool LocalPickPopup::init(std::function<void(GJGameLevel*)> cb) {
+    if (!Popup::init(POPUP_W, POPUP_H)) return false;
     m_callback = std::move(cb);
     this->setTitle("Pick a Local Level");
 
-    const auto size = m_mainLayer->getContentSize();
-    const CCSize listSize{260.f, 150.f};
+    const CCSize listSize{264.f, 180.f};
 
     auto scroll = ScrollLayer::create(listSize);
-    scroll->setPosition((size.width - listSize.width) / 2.f, 20.f);
-    m_mainLayer->addChild(scroll);
+    scroll->m_contentLayer->setLayout(ScrollLayer::createDefaultListLayout());
+    m_mainLayer->addChildAtPosition(scroll, Anchor::Center,
+                                    ccp(-listSize.width / 2.f, -listSize.height / 2.f - 8.f),
+                                    ccp(0.f, 0.f));
 
     std::vector<GJGameLevel*> levels;
     if (auto mgr = LocalLevelManager::get(); mgr && mgr->m_localLevels) {
         for (auto lvl : CCArrayExt<GJGameLevel*>(mgr->m_localLevels)) levels.push_back(lvl);
     }
 
-    const float rowH = 32.f;
-    const float totalH = std::max(listSize.height, levels.size() * rowH);
-    scroll->m_contentLayer->setContentSize({listSize.width, totalH});
-
-    int i = 0;
     for (auto lvl : levels) {
         auto row = CCMenu::create();
-        row->setPosition(listSize.width / 2.f, totalH - rowH / 2.f - i * rowH);
-        row->setContentSize({listSize.width, rowH});
+        row->setContentSize({listSize.width, 30.f});
 
-        auto btn = CCMenuItemSpriteExtra::create(
-            ButtonSprite::create(lvl->m_levelName.c_str(), 230, true, "bigFont.fnt",
-                                 "GJ_button_05.png", 26.f, 0.55f),
+        auto item = CCMenuItemSpriteExtra::create(
+            ButtonSprite::create(std::string(lvl->m_levelName).c_str(), 240, true, "bigFont.fnt",
+                                 "GJ_button_05.png", 30.f, 0.5f),
             this, menu_selector(LocalPickPopup::onPick));
-        btn->setUserObject("level", lvl);
-        row->addChild(btn);
+        item->setUserObject("level", lvl);
+        row->addChildAtPosition(item, Anchor::Center);
 
         scroll->m_contentLayer->addChild(row);
-        ++i;
     }
 
     if (levels.empty()) {
         auto empty = CCLabelBMFont::create("No local levels", "bigFont.fnt");
         empty->setScale(0.5f);
-        empty->setPosition(listSize.width / 2.f, listSize.height / 2.f);
-        scroll->m_contentLayer->addChild(empty);
+        empty->setOpacity(150);
+        auto row = CCMenu::create();
+        row->setContentSize({listSize.width, 30.f});
+        row->addChildAtPosition(empty, Anchor::Center);
+        scroll->m_contentLayer->addChild(row);
     }
 
+    scroll->m_contentLayer->updateLayout();
     scroll->scrollToTop();
     return true;
 }
@@ -59,10 +65,10 @@ void LocalPickPopup::onPick(CCObject* sender) {
 
 LocalPickPopup* LocalPickPopup::create(std::function<void(GJGameLevel*)> cb) {
     auto ret = new LocalPickPopup();
-    if (ret->initAnchored(320.f, 220.f, std::move(cb))) {
+    if (ret->init(std::move(cb))) {
         ret->autorelease();
         return ret;
     }
-    delete ret;
+    CC_SAFE_DELETE(ret);
     return nullptr;
 }

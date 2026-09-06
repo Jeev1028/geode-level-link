@@ -1,17 +1,15 @@
 #pragma once
 
-#include <Geode/Geode.hpp>
 #include <Geode/ui/Popup.hpp>
-#include <Geode/ui/ScrollLayer.hpp>
 
 #include <functional>
 
 // A scrollable list of the player's local levels. Calls back with the picked one.
-class LocalPickPopup : public geode::Popup<std::function<void(GJGameLevel*)>> {
+class LocalPickPopup : public geode::Popup {
 protected:
     std::function<void(GJGameLevel*)> m_callback;
 
-    bool setup(std::function<void(GJGameLevel*)> cb) override;
+    bool init(std::function<void(GJGameLevel*)> cb);
     void onPick(cocos2d::CCObject* sender);
 
 public:

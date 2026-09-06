@@ -7,15 +7,19 @@
 
 // A reference to "the other" level a level is linked to.
 struct LevelRef {
-    std::string kind;     // "online" or "local"
-    int id = 0;           // online level id (0 for local levels)
-    std::string name;     // display name; primary key for local levels
+    std::string kind;  // "online" or "local"
+    int id = 0;        // online level id (0 for local levels)
+    std::string name;  // display name; primary key for local levels
 
     bool isOnline() const { return kind == "online"; }
 };
 
 // Persists level <-> level links inside the mod's savedata.
-// Links are stored two-directionally so one action toggles both ways.
+//
+// Storage: one flat saved-value per level. Key   = "link/" + <levelKey>,
+//                                          value = the linked level's key.
+// A level key is "online:<id>" or "local:<name>". Links are written in both
+// directions so one action toggles either way.
 class LinkStore {
 public:
     static LinkStore* get();
@@ -27,13 +31,11 @@ public:
     static LevelRef refFor(GJGameLevel* level);
 
     std::optional<LevelRef> getLink(GJGameLevel* level);
-
-    // Links `from` <-> `to` (both directions).
     void setLink(GJGameLevel* from, const LevelRef& to);
-
     void removeLink(GJGameLevel* level);
 
 private:
-    matjson::Value& root();
-    void save();
+    static std::string savedKey(const std::string& levelKey);
+    static std::string refToKey(const LevelRef& ref);
+    static std::optional<LevelRef> keyToRef(const std::string& key);
 };

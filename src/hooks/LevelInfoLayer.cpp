@@ -7,23 +7,22 @@
 
 using namespace geode::prelude;
 
-// ADJUST: for older GD the signature is init(GJGameLevel*) with no `challenge`.
 class $modify(LLLevelInfoLayer, LevelInfoLayer) {
     bool init(GJGameLevel * level, bool challenge) {
         if (!LevelInfoLayer::init(level, challenge)) return false;
 
+        // "left-side-menu" is assigned by the geode.node-ids dependency.
         auto menu = typeinfo_cast<CCMenu*>(this->getChildByID("left-side-menu"));
         if (!menu) {
             menu = CCMenu::create();
             menu->setID("level-link-menu"_spr);
-            const auto win = CCDirector::sharedDirector()->getWinSize();
-            menu->setPosition(28.f, win.height - 30.f);
-            this->addChild(menu, 100);
+            menu->setContentSize({40.f, 180.f});
+            menu->setLayout(ColumnLayout::create()->setAxisReverse(true));
+            this->addChildAtPosition(menu, Anchor::Left, ccp(28.f, 0.f), false);
         }
 
-        auto spr = CCSprite::createWithSpriteFrameName("GJ_linkBtn_001.png");
-        if (!spr) spr = CCSprite::createWithSpriteFrameName("GJ_replayBtn_001.png");
-        spr->setScale(0.8f);
+        auto spr = CircleButtonSprite::createWithSpriteFrameName(
+            "GJ_getSquareBtn02_001.png", 0.8f, CircleBaseColor::Cyan, CircleBaseSize::Small);
         auto btn = CCMenuItemSpriteExtra::create(spr, this,
                                                  menu_selector(LLLevelInfoLayer::onLevelLink));
         btn->setID("level-link-button"_spr);

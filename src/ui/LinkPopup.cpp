@@ -1,54 +1,55 @@
 #include "LinkPopup.hpp"
 
+#include <Geode/Geode.hpp>
+
 #include "../LinkStore.hpp"
 #include "LocalPickPopup.hpp"
 
 using namespace geode::prelude;
 
-bool LinkPopup::setup(GJGameLevel* level) {
+namespace {
+constexpr float POPUP_W = 340.f;
+constexpr float POPUP_H = 220.f;
+}  // namespace
+
+bool LinkPopup::init(GJGameLevel* level) {
+    if (!Popup::init(POPUP_W, POPUP_H)) return false;
     m_level = level;
     this->setTitle("Link Level");
 
-    const auto size = m_mainLayer->getContentSize();
+    m_statusLabel = CCLabelBMFont::create("", "bigFont.fnt");
+    m_statusLabel->setScale(0.45f);
+    m_mainLayer->addChildAtPosition(m_statusLabel, Anchor::Top, ccp(0.f, -30.f));
 
-    m_status = CCLabelBMFont::create("", "bigFont.fnt");
-    m_status->setScale(0.45f);
-    m_status->setPosition(size.width / 2.f, size.height - 48.f);
-    m_mainLayer->addChild(m_status);
-
-    m_idInput = TextInput::create(190.f, "Online Level ID");
+    m_idInput = TextInput::create(200.f, "Online Level ID");
     m_idInput->setCommonFilter(CommonFilter::Uint);
-    m_idInput->setPosition(size.width / 2.f, size.height / 2.f + 12.f);
-    m_mainLayer->addChild(m_idInput);
+    m_mainLayer->addChildAtPosition(m_idInput, Anchor::Center, ccp(0.f, 30.f));
 
-    auto menu = CCMenu::create();
-    menu->setPosition(size.width / 2.f, size.height / 2.f - 34.f);
-    m_mainLayer->addChild(menu);
+    auto actionMenu = CCMenu::create();
+    actionMenu->setContentWidth(POPUP_W - 40.f);
+    actionMenu->addChild(CCMenuItemSpriteExtra::create(
+        ButtonSprite::create("Link by ID"), this, menu_selector(LinkPopup::onLinkById)));
+    actionMenu->addChild(CCMenuItemSpriteExtra::create(
+        ButtonSprite::create("Link Local"), this, menu_selector(LinkPopup::onLinkLocal)));
+    actionMenu->setLayout(RowLayout::create()->setGap(10.f));
+    m_mainLayer->addChildAtPosition(actionMenu, Anchor::Center, ccp(0.f, -12.f));
 
-    auto byId = CCMenuItemSpriteExtra::create(ButtonSprite::create("Link by ID"), this,
-                                              menu_selector(LinkPopup::onLinkById));
-    auto local = CCMenuItemSpriteExtra::create(ButtonSprite::create("Link Local"), this,
-                                               menu_selector(LinkPopup::onLinkLocal));
-    menu->addChild(byId);
-    menu->addChild(local);
-    menu->setLayout(RowLayout::create()->setGap(10.f));
-
-    auto bottomMenu = CCMenu::create();
-    bottomMenu->setPosition(size.width / 2.f, 26.f);
-    m_mainLayer->addChild(bottomMenu);
-    auto unlink = CCMenuItemSpriteExtra::create(
+    auto unlinkMenu = CCMenu::create();
+    auto unlinkBtn = CCMenuItemSpriteExtra::create(
         ButtonSprite::create("Unlink", "goldFont.fnt", "GJ_button_06.png"), this,
         menu_selector(LinkPopup::onUnlink));
-    bottomMenu->addChild(unlink);
-    bottomMenu->setLayout(RowLayout::create());
+    unlinkBtn->setScale(0.7f);
+    unlinkMenu->addChild(unlinkBtn);
+    unlinkMenu->setLayout(RowLayout::create());
+    m_mainLayer->addChildAtPosition(unlinkMenu, Anchor::Bottom, ccp(0.f, 26.f));
 
     this->refreshStatus();
     return true;
 }
 
 void LinkPopup::onLinkById(CCObject*) {
-    const auto parsed = geode::utils::numFromString<int>(m_idInput->getString());
-    const int id = parsed.unwrapOr(0);
+    const int id =
+        numFromString<int>(std::string(m_idInput->getString())).unwrapOr(0);
     if (id <= 0) {
         FLAlertLayer::create("Invalid", "Enter a valid online level ID.", "OK")->show();
         return;
@@ -69,8 +70,8 @@ void LinkPopup::onLinkLocal(CCObject*) {
             FLAlertLayer::create("Invalid", "A level can't be linked to itself.", "OK")->show();
             return;
         }
-        LinkStore::get()->setLink(m_level,
-                                  LevelRef{"local", 0, std::string(picked->m_levelName)});
+        LinkStore::get()->setLink(
+            m_level, LevelRef{"local", 0, std::string(picked->m_levelName)});
         Notification::create("Linked to local level", NotificationIcon::Success)->show();
         this->refreshStatus();
     })->show();
@@ -84,22 +85,21 @@ void LinkPopup::onUnlink(CCObject*) {
 
 void LinkPopup::refreshStatus() {
     if (const auto link = LinkStore::get()->getLink(m_level)) {
-        m_status->setString(
-            fmt::format("Linked to: {}", link->isOnline()
-                                             ? fmt::format("online #{}", link->id)
-                                             : fmt::format("local \"{}\"", link->name))
-                .c_str());
+        const auto text = link->isOnline()
+                              ? fmt::format("Linked to: online #{}", link->id)
+                              : fmt::format("Linked to: local \"{}\"", link->name);
+        m_statusLabel->setString(text.c_str());
     } else {
-        m_status->setString("Not linked");
+        m_statusLabel->setString("Not linked");
     }
 }
 
 LinkPopup* LinkPopup::create(GJGameLevel* level) {
     auto ret = new LinkPopup();
-    if (ret->initAnchored(340.f, 220.f, level)) {
+    if (ret->init(level)) {
         ret->autorelease();
         return ret;
     }
-    delete ret;
+    CC_SAFE_DELETE(ret);
     return nullptr;
 }

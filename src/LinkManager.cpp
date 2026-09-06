@@ -7,6 +7,16 @@ LinkManager* LinkManager::get() {
     return &inst;
 }
 
+bool LinkManager::canSwitchNow() {
+    auto pl = PlayLayer::get();
+    if (!pl || !pl->m_level) return false;
+
+    auto scene = CCScene::get();
+    if (!scene || !scene->getChildByType<PauseLayer>(0)) return false;
+
+    return LinkStore::get()->getLink(pl->m_level).has_value();
+}
+
 GJGameLevel* LinkManager::findLocal(const std::string& name) {
     auto mgr = LocalLevelManager::get();
     if (!mgr || !mgr->m_localLevels) return nullptr;
@@ -16,10 +26,10 @@ GJGameLevel* LinkManager::findLocal(const std::string& name) {
     return nullptr;
 }
 
-GJGameLevel* LinkManager::findCachedOnline(int id) {
-    // ADJUST: returns a stored GJGameLevel* if the level was previously
-    // downloaded/saved this session; otherwise nullptr.
-    return GameLevelManager::sharedState()->getSavedLevel(id);
+void LinkManager::requestSwitchFromCurrent() {
+    auto pl = PlayLayer::get();
+    if (!pl || !pl->m_level) return;
+    this->requestSwitch(pl->m_level);
 }
 
 void LinkManager::requestSwitch(GJGameLevel* current) {
@@ -29,30 +39,27 @@ void LinkManager::requestSwitch(GJGameLevel* current) {
         return;
     }
 
-    float matchX = 0.f;
+    m_pendingMatchX = 0.f;
     if (Mod::get()->getSettingValue<bool>("match-position")) {
         if (auto pl = PlayLayer::get(); pl && pl->m_player1) {
-            matchX = pl->m_player1->getPositionX();
+            m_pendingMatchX = pl->m_player1->getPositionX();
         }
     }
 
-    auto proceed = [this, link, matchX]() {
-        m_pendingMatchX = matchX;
-
-        if (link->isOnline()) {
-            if (auto cached = findCachedOnline(link->id)) {
-                doSwitch(cached);
+    auto start = [this, ref = *link]() {
+        if (ref.isOnline()) {
+            if (auto cached = GameLevelManager::get()->getSavedLevel(ref.id)) {
+                this->doSwitch(cached);
                 return;
             }
             Notification::create("Downloading linked level…", NotificationIcon::Loading, 0.f)
                 ->show();
             m_switchAfterDownload = true;
-            // ADJUST: delegate member + method names.
-            GameLevelManager::sharedState()->m_levelDownloadDelegate = this;
-            GameLevelManager::sharedState()->downloadLevel(link->id, false);
+            GameLevelManager::get()->m_levelDownloadDelegate = this;
+            GameLevelManager::get()->downloadLevel(ref.id, false, 0);
         } else {
-            if (auto local = findLocal(link->name)) {
-                doSwitch(local);
+            if (auto local = findLocal(ref.name)) {
+                this->doSwitch(local);
             } else {
                 Notification::create("Linked local level not found", NotificationIcon::Error)
                     ->show();
@@ -61,25 +68,24 @@ void LinkManager::requestSwitch(GJGameLevel* current) {
     };
 
     if (Mod::get()->getSettingValue<bool>("confirm-switch")) {
-        createQuickPopup(
-            "Switch Level", "Switch to the <cy>linked</c> version of this level?", "Cancel",
-            "Switch", [proceed](auto, bool second) {
-                if (second) proceed();
-            });
+        createQuickPopup("Switch Level", "Switch to the <cy>linked</c> version of this level?",
+                         "Cancel", "Switch", [start](FLAlertLayer*, bool btn2) {
+                             if (btn2) start();
+                         });
     } else {
-        proceed();
+        start();
     }
 }
 
 void LinkManager::levelDownloadFinished(GJGameLevel* level) {
-    GameLevelManager::sharedState()->m_levelDownloadDelegate = nullptr;
+    GameLevelManager::get()->m_levelDownloadDelegate = nullptr;
     if (std::exchange(m_switchAfterDownload, false)) {
-        doSwitch(level);
+        this->doSwitch(level);
     }
 }
 
 void LinkManager::levelDownloadFailed(int reason) {
-    GameLevelManager::sharedState()->m_levelDownloadDelegate = nullptr;
+    GameLevelManager::get()->m_levelDownloadDelegate = nullptr;
     m_switchAfterDownload = false;
     Notification::create(fmt::format("Linked level download failed ({})", reason),
                          NotificationIcon::Error)
@@ -88,29 +94,32 @@ void LinkManager::levelDownloadFailed(int reason) {
 
 void LinkManager::doSwitch(GJGameLevel* target) {
     if (!target) return;
+    const float matchX = std::exchange(m_pendingMatchX, 0.f);
 
-    // ADJUST: PlayLayer::scene(level, useReplay, dontCreateObjects) — confirm
-    // arg order/meaning against your bindings.
-    auto scene = PlayLayer::scene(target, false, false);
-    CCDirector::sharedDirector()->replaceScene(scene);
+    Loader::get()->queueInMainThread([target, matchX]() {
+        CCDirector::sharedDirector()->replaceScene(PlayLayer::scene(target, false, false));
 
-    if (m_pendingMatchX > 1.f && Mod::get()->getSettingValue<bool>("match-position")) {
-        const float x = m_pendingMatchX;
-        Loader::get()->queueInMainThread([x]() {
-            auto pl = PlayLayer::get();
-            if (!pl || !pl->m_player1) return;
-            // EXPERIMENTAL: raw teleport only. Triggers / moving objects are not
-            // simulated, so gameplay past this point is not physically accurate.
-            // Do not use for legitimate leaderboard runs.
-            pl->m_player1->setPositionX(x);
-        });
-    }
-    m_pendingMatchX = 0.f;
+        if (matchX > 1.f) {
+            // EXPERIMENTAL: raw teleport a couple of frames after load. Triggers /
+            // moving objects are not simulated - visual only, never for leaderboard runs.
+            Loader::get()->queueInMainThread([matchX]() {
+                Loader::get()->queueInMainThread([matchX]() {
+                    if (auto pl = PlayLayer::get(); pl && pl->m_player1) {
+                        pl->m_player1->setPositionX(matchX);
+                    }
+                });
+            });
+        }
+    });
 }
 
 void LinkManager::precache(const LevelRef& ref) {
     if (!ref.isOnline()) return;
     if (!Mod::get()->getSettingValue<bool>("precache")) return;
-    if (findCachedOnline(ref.id)) return;
-    GameLevelManager::sharedState()->downloadLevel(ref.id, false);
+
+    auto glm = GameLevelManager::get();
+    if (glm->getSavedLevel(ref.id)) return;
+    if (glm->m_levelDownloadDelegate) return;  // don't stomp an in-progress download
+
+    glm->downloadLevel(ref.id, false, 0);
 }
