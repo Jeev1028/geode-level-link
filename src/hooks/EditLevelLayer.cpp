@@ -1,5 +1,5 @@
 #include <Geode/Geode.hpp>
-#include <Geode/modify/LevelInfoLayer.hpp>
+#include <Geode/modify/EditLevelLayer.hpp>
 
 #include "../LinkManager.hpp"
 #include "../LinkStore.hpp"
@@ -7,24 +7,23 @@
 
 using namespace geode::prelude;
 
-class $modify(LLLevelInfoLayer, LevelInfoLayer) {
-    bool init(GJGameLevel * level, bool challenge) {
-        if (!LevelInfoLayer::init(level, challenge)) return false;
+// The screen you get when you tap one of your own created levels
+// (Edit / Play / Share buttons). Adds a "link" button to the right-hand
+// action column so local levels can be linked too.
+class $modify(LLEditLevelLayer, EditLevelLayer) {
+    bool init(GJGameLevel * level) {
+        if (!EditLevelLayer::init(level)) return false;
 
-        // "left-side-menu" is assigned by the geode.node-ids dependency.
-        auto menu = typeinfo_cast<CCMenu*>(this->getChildByID("left-side-menu"));
+        auto menu = typeinfo_cast<CCMenu*>(this->getChildByID("level-actions-menu"));
         if (!menu) {
-            menu = CCMenu::create();
-            menu->setID("level-link-menu"_spr);
-            menu->setContentSize({40.f, 180.f});
-            menu->setLayout(ColumnLayout::create()->setAxisReverse(true));
-            this->addChildAtPosition(menu, Anchor::Left, ccp(28.f, 0.f), false);
+            menu = typeinfo_cast<CCMenu*>(this->getChildByID("info-button-menu"));
         }
+        if (!menu) return true;
 
         auto spr = CircleButtonSprite::createWithSpriteFrameName(
             "d_link_01_001.png", 1.f, CircleBaseColor::Cyan, CircleBaseSize::Small);
         auto btn = CCMenuItemSpriteExtra::create(spr, this,
-                                                 menu_selector(LLLevelInfoLayer::onLevelLink));
+                                                 menu_selector(LLEditLevelLayer::onLevelLink));
         btn->setID("level-link-button"_spr);
         menu->addChild(btn);
         menu->updateLayout();
