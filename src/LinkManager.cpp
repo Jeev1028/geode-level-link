@@ -2,6 +2,15 @@
 
 using namespace geode::prelude;
 
+namespace {
+// True if a "you can safely switch here" overlay (pause menu or the
+// level-complete screen) is currently on top of the running scene.
+bool hasSwitchOverlay(CCScene* scene) {
+    if (!scene) return false;
+    return scene->getChildByType<PauseLayer>(0) || scene->getChildByType<EndLevelLayer>(0);
+}
+}  // namespace
+
 LinkManager* LinkManager::get() {
     static LinkManager inst;
     return &inst;
@@ -11,8 +20,7 @@ bool LinkManager::canSwitchNow() {
     auto pl = PlayLayer::get();
     if (!pl || !pl->m_level) return false;
 
-    auto scene = CCScene::get();
-    if (!scene || !scene->getChildByType<PauseLayer>(0)) return false;
+    if (!hasSwitchOverlay(CCScene::get())) return false;
 
     return LinkStore::get()->getLink(pl->m_level).has_value();
 }
@@ -107,11 +115,15 @@ void LinkManager::doSwitch(GJGameLevel* target) {
               target->m_levelID.value(), static_cast<int>(target->m_levelType));
 
     Loader::get()->queueInMainThread([level, matchX]() {
-        // 1. Dismiss the pause menu first - otherwise its teardown runs against
+        // 1. Dismiss whatever overlay triggered the switch (pause menu or the
+        //    level-complete screen) first - otherwise its teardown runs against
         //    the freshly-created PlayLayer and death-effect mods crash.
         if (auto scene = CCScene::get()) {
             while (auto pause = scene->getChildByType<PauseLayer>(0)) {
                 pause->removeFromParentAndCleanup(true);
+            }
+            while (auto end = scene->getChildByType<EndLevelLayer>(0)) {
+                end->removeFromParentAndCleanup(true);
             }
         }
 

@@ -19,8 +19,10 @@ class $modify(LLPauseLayer, PauseLayer) {
         auto menu = this->getChildByID("right-button-menu");
         if (!menu) return;
 
+        // Same chain-link glyph as the "manage link" buttons (LevelInfoLayer /
+        // EditLevelLayer / EndLevelLayer), but green to read as "do it now".
         auto spr = CircleButtonSprite::createWithSpriteFrameName(
-            "GJ_replayBtn_001.png", 1.f, CircleBaseColor::Green, CircleBaseSize::Medium);
+            "d_link_01_001.png", 1.f, CircleBaseColor::Green, CircleBaseSize::Medium);
         auto btn = CCMenuItemSpriteExtra::create(
             spr, this, menu_selector(LLPauseLayer::onSwitchLinked));
         btn->setID("switch-linked-level"_spr);
