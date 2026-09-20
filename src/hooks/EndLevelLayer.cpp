@@ -9,8 +9,7 @@ using namespace geode::prelude;
 
 // The level-complete ("LEVEL COMPLETE" / 100%) screen. Gives the same
 // one-key/one-click swap here, so finishing a linked level's run makes it
-// trivial to hop straight to its pair (e.g. jump from the StartPos practice
-// copy you just finished into the rated level, or vice versa).
+// trivial to hop straight to its pair.
 class $modify(LLEndLevelLayer, EndLevelLayer) {
     void customSetup() {
         EndLevelLayer::customSetup();
@@ -19,19 +18,24 @@ class $modify(LLEndLevelLayer, EndLevelLayer) {
         if (!pl || !pl->m_level) return;
         if (!LinkStore::get()->getLink(pl->m_level).has_value()) return;
 
-        // "button-menu" (holding retry/exit/edit/...) is assigned by the
-        // geode.node-ids dependency, inside GJDropDownLayer's m_mainLayer.
-        auto menu =
-            m_mainLayer ? typeinfo_cast<CCMenu*>(m_mainLayer->getChildByID("button-menu")) : nullptr;
-        if (!menu) return;
-
+        // GJ_replayBtn_001.png is part of the always-loaded core UI sheet (unlike
+        // the "d_"-prefixed decoration sprites, which only load inside the editor
+        // and otherwise silently render as a blank placeholder).
         auto spr = CircleButtonSprite::createWithSpriteFrameName(
-            "d_link_01_001.png", 1.f, CircleBaseColor::Green, CircleBaseSize::Medium);
+            "GJ_replayBtn_001.png", 1.f, CircleBaseColor::Green, CircleBaseSize::Medium);
         auto btn = CCMenuItemSpriteExtra::create(
             spr, this, menu_selector(LLEndLevelLayer::onSwitchLinked));
         btn->setID("switch-linked-level"_spr);
+
+        // Deliberately NOT injected into "button-menu": that menu isn't laid out
+        // the same way on every variant of this screen (e.g. the editor's
+        // test-play completion popup put an injected child dead-center instead
+        // of alongside retry/edit/exit). A standalone menu anchored to a screen
+        // corner is predictable everywhere this layer shows up.
+        auto menu = CCMenu::create();
+        menu->setID("level-link-switch-menu"_spr);
         menu->addChild(btn);
-        menu->updateLayout();
+        this->addChildAtPosition(menu, Anchor::BottomRight, ccp(-40.f, 40.f), false);
     }
 
     void onSwitchLinked(CCObject*) { LinkManager::get()->requestSwitchFromCurrent(); }
