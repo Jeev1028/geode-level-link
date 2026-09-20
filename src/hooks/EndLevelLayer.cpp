@@ -17,11 +17,10 @@ class $modify(LLEndLevelLayer, EndLevelLayer) {
         if (!pl || !pl->m_level) return;
         if (!LinkStore::get()->getLink(pl->m_level).has_value()) return;
 
-        // Our own bundled icon (resources/link-icon.png). Scale calibrated
-        // against a screenshot: the ~175px-diameter neighboring circular
-        // buttons vs. our ~190px-tall badge at scale 1.6.
+        // Our own bundled icon (resources/link-icon.png). Same scale as the
+        // level-page/edit-level buttons - confirmed to look right there.
         auto spr = CCSprite::create("link-icon.png"_spr);
-        spr->setScale(1.3f);
+        spr->setScale(0.65f);
         auto btn = CCMenuItemSpriteExtra::create(
             spr, this, menu_selector(LLEndLevelLayer::onSwitchLinked));
         btn->setID("switch-linked-level"_spr);
@@ -34,7 +33,7 @@ class $modify(LLEndLevelLayer, EndLevelLayer) {
         auto menu = CCMenu::create();
         menu->setID("level-link-switch-menu"_spr);
         menu->addChild(btn);
-        this->addChildAtPosition(menu, Anchor::BottomRight, ccp(-40.f, 33.f), false);
+        this->addChildAtPosition(menu, Anchor::BottomRight, ccp(-20.f, 17.f), false);
     }
 
     void onSwitchLinked(CCObject*) { LinkManager::get()->requestSwitchFromCurrent(); }

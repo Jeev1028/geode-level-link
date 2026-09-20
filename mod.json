@@ -9,7 +9,7 @@
 	"version": "v1.2.0",
 	"id": "jeevin.level-link",
 	"name": "Level Link",
-	"developer": "jeevin",
+	"developer": "Jeev1028",
 	"description": "Link two versions of a level and swap between them from the pause menu.",
 	"tags": ["gameplay", "utility"],
 	"links": {

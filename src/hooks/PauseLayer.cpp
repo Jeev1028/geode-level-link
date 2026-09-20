@@ -18,11 +18,10 @@ class $modify(LLPauseLayer, PauseLayer) {
         auto menu = this->getChildByID("right-button-menu");
         if (!menu) return;
 
-        // Our own bundled icon (resources/link-icon.png). Scale calibrated
-        // against a screenshot: the ~175px-diameter neighboring circular
-        // buttons vs. our ~190px-tall badge at scale 1.6.
+        // Our own bundled icon (resources/link-icon.png). Same scale as the
+        // level-page/edit-level buttons - confirmed to look right there.
         auto spr = CCSprite::create("link-icon.png"_spr);
-        spr->setScale(1.3f);
+        spr->setScale(0.65f);
         auto btn = CCMenuItemSpriteExtra::create(
             spr, this, menu_selector(LLPauseLayer::onSwitchLinked));
         btn->setID("switch-linked-level"_spr);
