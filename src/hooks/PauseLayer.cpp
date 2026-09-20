@@ -1,9 +1,9 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/PauseLayer.hpp>
-#include <Geode/ui/BasedButtonSprite.hpp>
 
 #include "../LinkManager.hpp"
 #include "../LinkStore.hpp"
+#include "../ui/LinkIcon.hpp"
 
 using namespace geode::prelude;
 
@@ -19,13 +19,8 @@ class $modify(LLPauseLayer, PauseLayer) {
         auto menu = this->getChildByID("right-button-menu");
         if (!menu) return;
 
-        // A standard circular button base (matching every other GD/mod button)
-        // with our own icon as the top content. CircleButtonSprite auto-fits
-        // the top node to size, so no manual scale tuning is needed here.
-        auto icon = CCSprite::create("link-icon.png"_spr);
-        auto spr = CircleButtonSprite::create(icon, CircleBaseColor::Green, CircleBaseSize::Medium);
-        auto btn = CCMenuItemSpriteExtra::create(
-            spr, this, menu_selector(LLPauseLayer::onSwitchLinked));
+        // Diameter matched against the neighboring circular buttons here (~175pt).
+        auto btn = LinkIcon::createButton(175.f, this, menu_selector(LLPauseLayer::onSwitchLinked));
         btn->setID("switch-linked-level"_spr);
         menu->addChild(btn);
         menu->updateLayout();

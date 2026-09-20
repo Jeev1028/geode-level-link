@@ -1,9 +1,9 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/EndLevelLayer.hpp>
-#include <Geode/ui/BasedButtonSprite.hpp>
 
 #include "../LinkManager.hpp"
 #include "../LinkStore.hpp"
+#include "../ui/LinkIcon.hpp"
 
 using namespace geode::prelude;
 
@@ -55,13 +55,9 @@ class $modify(LLEndLevelLayer, EndLevelLayer) {
         if (!pl || !pl->m_level) return;
         if (!LinkStore::get()->getLink(pl->m_level).has_value()) return;
 
-        // A standard circular button base (matching every other GD/mod button)
-        // with our own icon as the top content. CircleButtonSprite auto-fits
-        // the top node to size, so no manual scale tuning is needed here.
-        auto icon = CCSprite::create("link-icon.png"_spr);
-        auto spr = CircleButtonSprite::create(icon, CircleBaseColor::Green, CircleBaseSize::Medium);
-        auto btn = CCMenuItemSpriteExtra::create(
-            spr, this, menu_selector(LLEndLevelLayer::onSwitchLinked));
+        // Diameter matched against the neighboring circular buttons here (~175pt).
+        auto btn =
+            LinkIcon::createButton(175.f, this, menu_selector(LLEndLevelLayer::onSwitchLinked));
         btn->setID("switch-linked-level"_spr);
 
         auto menu = CCMenu::create();

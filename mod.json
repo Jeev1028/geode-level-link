@@ -6,7 +6,7 @@
 		"android": "2.2081",
 		"ios": "2.2081"
 	},
-	"version": "v1.2.0",
+	"version": "v1.3.0",
 	"id": "jeevin.level-link",
 	"name": "Level Link",
 	"developer": "Jeev1028",
@@ -19,7 +19,15 @@
 		"geode.node-ids": ">=v1.20.0"
 	},
 	"resources": {
-		"sprites": ["resources/link-icon.png"]
+		"sprites": [
+			"resources/link-square.png",
+			"resources/link-swap-circle.png",
+			"resources/link-chain.png",
+			"resources/link-swap-arrows.png",
+			"resources/link-base-shadow.png",
+			"resources/link-base-ring.png",
+			"resources/link-base-fill.png"
+		]
 	},
 	"settings": {
 		"switch-key": {
@@ -27,6 +35,38 @@
 			"name": "Switch to Linked Level",
 			"description": "Press while paused in a linked level to swap to its linked version.",
 			"default": "T"
+		},
+		"appearance-title": {
+			"type": "title",
+			"name": "Button Appearance"
+		},
+		"circle-color": {
+			"type": "color",
+			"name": "Button Color",
+			"description": "Color of the circular background behind the icon.",
+			"default": "#913DD8"
+		},
+		"icon-left-color": {
+			"type": "color",
+			"name": "Icon Left Color",
+			"description": "Color of the left square in the mod's icon.",
+			"default": "#2882E6"
+		},
+		"icon-right-color": {
+			"type": "color",
+			"name": "Icon Right Color",
+			"description": "Color of the right square in the mod's icon.",
+			"default": "#46C85A"
+		},
+		"icon-middle-color": {
+			"type": "color",
+			"name": "Icon Middle Color",
+			"description": "Color of the small circle behind the white swap-arrows icon.",
+			"default": "#46C85A"
+		},
+		"behavior-title": {
+			"type": "title",
+			"name": "Behavior"
 		},
 		"confirm-switch": {
 			"type": "bool",
