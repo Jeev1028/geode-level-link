@@ -12,6 +12,9 @@
 	"developer": "jeevin",
 	"description": "Link two versions of a level and swap between them from the pause menu.",
 	"tags": ["gameplay", "utility"],
+	"links": {
+		"source": "https://github.com/Jeev1028/geode-level-link"
+	},
 	"dependencies": {
 		"geode.node-ids": ">=v1.20.0"
 	},
