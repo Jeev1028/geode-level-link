@@ -1,14 +1,20 @@
 # v1.2.0
 
-- All buttons now use the mod's own bundled icon instead of a borrowed GD
-  sprite (the previous icon, `d_link_01_001.png`, turned out to be an
-  editor-only decoration sprite whose texture sheet isn't loaded outside the
-  level editor, so it silently rendered as a blank placeholder)
+- All buttons now use the mod's own bundled icon (`resources/link-icon.png`,
+  derived from the mod's logo) instead of a borrowed GD sprite - the previous
+  icon, `d_link_01_001.png`, turned out to be an editor-only decoration
+  sprite whose texture sheet isn't loaded outside the level editor, so it
+  silently rendered as a blank placeholder
+- Every button is now a standard circular button (matching every other GD/mod
+  button), with the icon auto-fit inside it - cyan for the "manage a link"
+  buttons, green for the "switch now" buttons
 - Fixed the level-complete screen's switch button/keybind not working in some
   contexts (e.g. the level editor's test-play completion popup) - overlay
   detection now searches the whole scene tree instead of only direct children
-- The level-complete button no longer overlaps the run summary text; it's now
-  anchored to the bottom-right corner
+- The level-complete button no longer overlaps the run summary text or gets
+  clipped by the screen edge; it now finds a free spot in the bottom-right
+  corner and stacks above other mods' UI if something's already there
+- Developer set to Jeev1028
 
 # v1.1.0
 

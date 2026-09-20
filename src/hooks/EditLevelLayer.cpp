@@ -1,5 +1,6 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/EditLevelLayer.hpp>
+#include <Geode/ui/BasedButtonSprite.hpp>
 
 #include "../LinkManager.hpp"
 #include "../LinkStore.hpp"
@@ -20,11 +21,11 @@ class $modify(LLEditLevelLayer, EditLevelLayer) {
         }
         if (!menu) return true;
 
-        // Our own bundled icon (resources/link-icon.png). Scale calibrated
-        // against a screenshot: the ~88px-diameter neighboring circular
-        // buttons vs. our ~165px-tall badge at scale 1.3.
-        auto spr = CCSprite::create("link-icon.png"_spr);
-        spr->setScale(0.65f);
+        // A standard circular button base (matching every other GD/mod button)
+        // with our own icon as the top content. CircleButtonSprite auto-fits
+        // the top node to size, so no manual scale tuning is needed here.
+        auto icon = CCSprite::create("link-icon.png"_spr);
+        auto spr = CircleButtonSprite::create(icon, CircleBaseColor::Cyan, CircleBaseSize::Small);
         auto btn = CCMenuItemSpriteExtra::create(spr, this,
                                                  menu_selector(LLEditLevelLayer::onLevelLink));
         btn->setID("level-link-button"_spr);
