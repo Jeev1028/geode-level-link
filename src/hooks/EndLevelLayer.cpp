@@ -55,10 +55,9 @@ class $modify(LLEndLevelLayer, EndLevelLayer) {
         if (!pl || !pl->m_level) return;
         if (!LinkStore::get()->getLink(pl->m_level).has_value()) return;
 
-        // Same size as the level-page button (88pt) - 175pt scaled the same
-        // source art past a clean magnification and looked noticeably softer.
+        // Diameter matched against the neighboring circular buttons here (~175pt).
         auto btn =
-            LinkIcon::createButton(88.f, this, menu_selector(LLEndLevelLayer::onSwitchLinked));
+            LinkIcon::createButton(175.f, this, menu_selector(LLEndLevelLayer::onSwitchLinked));
         btn->setID("switch-linked-level"_spr);
 
         auto menu = CCMenu::create();

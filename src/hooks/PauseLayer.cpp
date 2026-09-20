@@ -19,9 +19,8 @@ class $modify(LLPauseLayer, PauseLayer) {
         auto menu = this->getChildByID("right-button-menu");
         if (!menu) return;
 
-        // Same size as the level-page button (88pt) - 175pt scaled the same
-        // source art past a clean magnification and looked noticeably softer.
-        auto btn = LinkIcon::createButton(88.f, this, menu_selector(LLPauseLayer::onSwitchLinked));
+        // Diameter matched against the neighboring circular buttons here (~175pt).
+        auto btn = LinkIcon::createButton(175.f, this, menu_selector(LLPauseLayer::onSwitchLinked));
         btn->setID("switch-linked-level"_spr);
         menu->addChild(btn);
         menu->updateLayout();
