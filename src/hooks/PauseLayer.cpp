@@ -15,12 +15,14 @@ class $modify(LLPauseLayer, PauseLayer) {
         if (!pl || !pl->m_level) return;
         if (!LinkStore::get()->getLink(pl->m_level).has_value()) return;
 
-        // "right-button-menu" is assigned by the geode.node-ids dependency.
+        // "right-button-menu" is a narrow (40pt-wide) column Geode's node-ids
+        // creates specifically for small utility icons (gear/eye/percent/
+        // scroll, ~87pt each) - NOT the big circular action buttons. Match
+        // those, not the bottom-row buttons.
         auto menu = this->getChildByID("right-button-menu");
         if (!menu) return;
 
-        // Diameter matched against the neighboring circular buttons here (~175pt).
-        auto btn = LinkIcon::createButton(175.f, this, menu_selector(LLPauseLayer::onSwitchLinked));
+        auto btn = LinkIcon::createButton(88.f, this, menu_selector(LLPauseLayer::onSwitchLinked));
         btn->setID("switch-linked-level"_spr);
         menu->addChild(btn);
         menu->updateLayout();

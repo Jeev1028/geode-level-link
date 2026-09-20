@@ -55,9 +55,13 @@ class $modify(LLEndLevelLayer, EndLevelLayer) {
         if (!pl || !pl->m_level) return;
         if (!LinkStore::get()->getLink(pl->m_level).has_value()) return;
 
-        // Diameter matched against the neighboring circular buttons here (~175pt).
+        // Same size as the level-page buttons (88pt) - the only size we've
+        // been able to confirm precisely, pixel-for-pixel, against a real
+        // screenshot. This screen's own bottom-row buttons are much bigger
+        // (~195pt), but our own standalone corner button doesn't need to
+        // match those exactly.
         auto btn =
-            LinkIcon::createButton(175.f, this, menu_selector(LLEndLevelLayer::onSwitchLinked));
+            LinkIcon::createButton(88.f, this, menu_selector(LLEndLevelLayer::onSwitchLinked));
         btn->setID("switch-linked-level"_spr);
 
         auto menu = CCMenu::create();

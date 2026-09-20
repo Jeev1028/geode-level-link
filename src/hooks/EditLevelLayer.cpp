@@ -21,8 +21,8 @@ class $modify(LLEditLevelLayer, EditLevelLayer) {
         }
         if (!menu) return true;
 
-        // Diameter matched against the neighboring circular buttons here (~88pt).
-        auto btn = LinkIcon::createButton(88.f, this, menu_selector(LLEditLevelLayer::onLevelLink));
+        // Slightly bigger than the ~88pt neighbors here, by request.
+        auto btn = LinkIcon::createButton(100.f, this, menu_selector(LLEditLevelLayer::onLevelLink));
         btn->setID("level-link-button"_spr);
         menu->addChild(btn);
         menu->updateLayout();
