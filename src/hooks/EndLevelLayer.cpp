@@ -1,6 +1,5 @@
 #include <Geode/Geode.hpp>
 #include <Geode/modify/EndLevelLayer.hpp>
-#include <Geode/ui/BasedButtonSprite.hpp>
 
 #include "../LinkManager.hpp"
 #include "../LinkStore.hpp"
@@ -18,11 +17,9 @@ class $modify(LLEndLevelLayer, EndLevelLayer) {
         if (!pl || !pl->m_level) return;
         if (!LinkStore::get()->getLink(pl->m_level).has_value()) return;
 
-        // GJ_replayBtn_001.png is part of the always-loaded core UI sheet (unlike
-        // the "d_"-prefixed decoration sprites, which only load inside the editor
-        // and otherwise silently render as a blank placeholder).
-        auto spr = CircleButtonSprite::createWithSpriteFrameName(
-            "GJ_replayBtn_001.png", 1.f, CircleBaseColor::Green, CircleBaseSize::Medium);
+        // Our own bundled icon (resources/link-icon.png), not a borrowed GD sprite.
+        auto spr = CCSprite::create("link-icon.png"_spr);
+        spr->setScale(0.2f);
         auto btn = CCMenuItemSpriteExtra::create(
             spr, this, menu_selector(LLEndLevelLayer::onSwitchLinked));
         btn->setID("switch-linked-level"_spr);

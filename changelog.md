@@ -1,3 +1,15 @@
+# v1.2.0
+
+- All buttons now use the mod's own bundled icon instead of a borrowed GD
+  sprite (the previous icon, `d_link_01_001.png`, turned out to be an
+  editor-only decoration sprite whose texture sheet isn't loaded outside the
+  level editor, so it silently rendered as a blank placeholder)
+- Fixed the level-complete screen's switch button/keybind not working in some
+  contexts (e.g. the level editor's test-play completion popup) - overlay
+  detection now searches the whole scene tree instead of only direct children
+- The level-complete button no longer overlaps the run summary text; it's now
+  anchored to the bottom-right corner
+
 # v1.1.0
 
 - Added support for the level-complete (100%) screen: the swap button and

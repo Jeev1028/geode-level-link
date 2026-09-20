@@ -6,7 +6,7 @@
 		"android": "2.2081",
 		"ios": "2.2081"
 	},
-	"version": "v1.1.0",
+	"version": "v1.2.0",
 	"id": "jeevin.level-link",
 	"name": "Level Link",
 	"developer": "jeevin",
@@ -17,6 +17,9 @@
 	},
 	"dependencies": {
 		"geode.node-ids": ">=v1.20.0"
+	},
+	"resources": {
+		"sprites": ["resources/link-icon.png"]
 	},
 	"settings": {
 		"switch-key": {

@@ -3,12 +3,23 @@
 using namespace geode::prelude;
 
 namespace {
+
+template <class T>
+T* findOverlay(CCNode* root) {
+    if (!root) return nullptr;
+    return findFirstChildRecursive<T>(root, [](T*) { return true; });
+}
+
 // True if a "you can safely switch here" overlay (pause menu or the
-// level-complete screen) is currently on top of the running scene.
+// level-complete screen) is currently anywhere under the running scene.
+// Searched recursively rather than only among immediate children, since
+// e.g. the editor's test-play completion screen nests EndLevelLayer under
+// LevelEditorLayer instead of adding it directly to the scene.
 bool hasSwitchOverlay(CCScene* scene) {
     if (!scene) return false;
-    return scene->getChildByType<PauseLayer>(0) || scene->getChildByType<EndLevelLayer>(0);
+    return findOverlay<PauseLayer>(scene) || findOverlay<EndLevelLayer>(scene);
 }
+
 }  // namespace
 
 LinkManager* LinkManager::get() {
@@ -119,10 +130,10 @@ void LinkManager::doSwitch(GJGameLevel* target) {
         //    level-complete screen) first - otherwise its teardown runs against
         //    the freshly-created PlayLayer and death-effect mods crash.
         if (auto scene = CCScene::get()) {
-            while (auto pause = scene->getChildByType<PauseLayer>(0)) {
+            while (auto pause = findOverlay<PauseLayer>(scene)) {
                 pause->removeFromParentAndCleanup(true);
             }
-            while (auto end = scene->getChildByType<EndLevelLayer>(0)) {
+            while (auto end = findOverlay<EndLevelLayer>(scene)) {
                 end->removeFromParentAndCleanup(true);
             }
         }

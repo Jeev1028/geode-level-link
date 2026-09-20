@@ -20,10 +20,9 @@ class $modify(LLEditLevelLayer, EditLevelLayer) {
         }
         if (!menu) return true;
 
-        // GJ_replayBtn_001.png is part of the always-loaded core UI sheet (unlike
-        // the "d_"-prefixed decoration sprites, which only load inside the editor).
-        auto spr = CircleButtonSprite::createWithSpriteFrameName(
-            "GJ_replayBtn_001.png", 1.f, CircleBaseColor::Cyan, CircleBaseSize::Small);
+        // Our own bundled icon (resources/link-icon.png), not a borrowed GD sprite.
+        auto spr = CCSprite::create("link-icon.png"_spr);
+        spr->setScale(0.15f);
         auto btn = CCMenuItemSpriteExtra::create(spr, this,
                                                  menu_selector(LLEditLevelLayer::onLevelLink));
         btn->setID("level-link-button"_spr);
