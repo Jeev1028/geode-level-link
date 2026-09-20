@@ -1,5 +1,7 @@
 #include "LinkManager.hpp"
 
+#include "ui/LinkPopup.hpp"
+
 using namespace geode::prelude;
 
 namespace {
@@ -34,6 +36,25 @@ bool LinkManager::canSwitchNow() {
     if (!hasSwitchOverlay(CCScene::get())) return false;
 
     return LinkStore::get()->getLink(pl->m_level).has_value();
+}
+
+bool LinkManager::openLinkMenuFromCurrent() {
+    auto scene = CCScene::get();
+    if (!scene) return false;
+
+    if (auto lil = findOverlay<LevelInfoLayer>(scene)) {
+        if (auto popup = LinkPopup::create(lil->m_level)) {
+            popup->show();
+            return true;
+        }
+    }
+    if (auto ell = findOverlay<EditLevelLayer>(scene)) {
+        if (auto popup = LinkPopup::create(ell->m_level)) {
+            popup->show();
+            return true;
+        }
+    }
+    return false;
 }
 
 GJGameLevel* LinkManager::findLocal(const std::string& name) {

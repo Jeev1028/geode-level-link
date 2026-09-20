@@ -16,5 +16,15 @@ $execute {
             return true;  // consume the keypress
         });
 
+    // Separate keybind for opening the link/unlink menu from a level's info
+    // or edit page - independent of "switch-key" since it's active in a
+    // different context (browsing a level page, not paused inside one).
+    geode::listenForKeybindSettingPresses(
+        "open-link-menu-key",
+        [](Keybind const&, bool down, bool repeat, double) -> bool {
+            if (!down || repeat) return false;
+            return LinkManager::openLinkMenuFromCurrent();
+        });
+
     log::info("Level Link loaded");
 }

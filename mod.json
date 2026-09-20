@@ -37,6 +37,12 @@
 			"description": "Press while paused in a linked level to swap to its linked version.",
 			"default": "T"
 		},
+		"open-link-menu-key": {
+			"type": "keybind",
+			"name": "Open Link Menu",
+			"description": "Press on a level's info page (or your own level's edit page) to open the link/unlink menu, same as tapping the button.",
+			"default": "T"
+		},
 		"appearance-title": {
 			"type": "title",
 			"name": "Button Appearance"

@@ -15,6 +15,11 @@ public:
     // Entry point from the pause-menu button and the keybind.
     void requestSwitchFromCurrent();
 
+    // If a LevelInfoLayer or EditLevelLayer is currently on screen, opens its
+    // LinkPopup (same as tapping the level page's link button). Entry point
+    // for the "open link menu" keybind. Returns true if a popup was opened.
+    static bool openLinkMenuFromCurrent();
+
     // Fire-and-forget background download so a later switch is instant.
     void precache(const LevelRef& ref);
 
