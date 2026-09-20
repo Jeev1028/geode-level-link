@@ -69,7 +69,7 @@
 			"type": "color",
 			"name": "Icon Chain Color",
 			"description": "Color of the chain links connecting the two squares.",
-			"default": "#FFCD28"
+			"default": "#FFD700"
 		},
 		"icon-middle-color": {
 			"type": "color",

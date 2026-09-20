@@ -24,6 +24,23 @@ constexpr float RENDER_BUG_FACTOR = 2.3f;
 
 ccColor3B settingColor(const char* key) { return Mod::get()->getSettingValue<ccColor3B>(key); }
 
+// Our source art is authored much larger than it's ever displayed (buttons
+// render at well under 100pt from source textures hundreds of pixels
+// across), which is a strong minification ratio. Plain bilinear minification
+// (cocos2d's default, no mipmaps) doesn't box-average properly at ratios
+// like that - it aliases/shimmers on fine detail (the chain links, gloss
+// highlights), which is what was showing up as "pixelated" even at 1080p.
+// Generating mipmaps and sampling trilinearly fixes that the same way
+// vanilla GD textures already look smooth when scaled down.
+void smoothMinification(CCSprite* sprite) {
+    if (!sprite) return;
+    auto tex = sprite->getTexture();
+    if (!tex) return;
+    tex->generateMipmap();
+    ccTexParams params = {GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE};
+    tex->setTexParameters(&params);
+}
+
 }  // namespace
 
 CCNode* LinkIcon::createIcon() {
@@ -43,26 +60,31 @@ CCNode* LinkIcon::createIcon() {
     auto left = CCSprite::create("link-square-left.png"_spr);
     left->setColor(settingColor("icon-left-color"));
     left->setPosition({77.5f, 78.f});
+    smoothMinification(left);
     container->addChild(left);
 
     auto right = CCSprite::create("link-square-right.png"_spr);
     right->setColor(settingColor("icon-right-color"));
     right->setPosition({211.5f, 78.f});
+    smoothMinification(right);
     container->addChild(right);
 
     auto chain = CCSprite::create("link-chain.png"_spr);
     chain->setColor(settingColor("icon-chain-color"));
     chain->setAnchorPoint({0.482f, 0.302f});
     chain->setPosition({143.f, 79.f});
+    smoothMinification(chain);
     container->addChild(chain);
 
     auto middle = CCSprite::create("link-swap-circle.png"_spr);
     middle->setColor(settingColor("icon-middle-color"));
     middle->setPosition({143.f, 79.f});
+    smoothMinification(middle);
     container->addChild(middle);
 
     auto arrows = CCSprite::create("link-swap-arrows.png"_spr);
     arrows->setPosition({143.f, 79.f});
+    smoothMinification(arrows);
     container->addChild(arrows);
 
     return container;
@@ -82,17 +104,20 @@ CCMenuItemSpriteExtra* LinkIcon::createButton(float diameter, CCObject* target,
     auto shadow = CCSprite::create("link-base-shadow.png"_spr);
     shadow->setScale(baseScale);
     shadow->setPosition(center);
+    smoothMinification(shadow);
     node->addChild(shadow);
 
     auto ring = CCSprite::create("link-base-ring.png"_spr);
     ring->setScale(baseScale);
     ring->setPosition(center);
+    smoothMinification(ring);
     node->addChild(ring);
 
     auto fill = CCSprite::create("link-base-fill.png"_spr);
     fill->setColor(settingColor("circle-color"));
     fill->setScale(baseScale);
     fill->setPosition(center);
+    smoothMinification(fill);
     node->addChild(fill);
 
     // Icon container has default (0,0) anchor, so position its bottom-left
