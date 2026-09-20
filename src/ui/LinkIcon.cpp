@@ -10,9 +10,17 @@ constexpr float ICON_W = 285.f;
 constexpr float ICON_H = 157.f;
 
 // The base part-sprites (link-base-*.png) are authored so that, after
-// Geode's resource pipeline downsamples them, they land at this diameter -
-// i.e. setScale(diameter / BASE_REF) gives an exact final size.
+// Geode's resource pipeline downsamples them, they should land at this
+// diameter in points.
+//
+// In practice, measured directly against neighboring vanilla buttons in a
+// real screenshot, every sprite loaded through Geode's "resources.sprites"
+// pipeline here is rendering ~2.3x bigger than that theoretical size (a
+// button requested at 88pt measured ~190-203px against an ~83px vanilla
+// neighbor in the same shot). Rather than guess why, RENDER_BUG_FACTOR
+// corrects for it empirically so requested sizes match reality.
 constexpr float BASE_REF = 200.f;
+constexpr float RENDER_BUG_FACTOR = 2.3f;
 
 ccColor3B settingColor(const char* key) { return Mod::get()->getSettingValue<ccColor3B>(key); }
 
@@ -62,7 +70,7 @@ CCNode* LinkIcon::createIcon() {
 
 CCMenuItemSpriteExtra* LinkIcon::createButton(float diameter, CCObject* target,
                                               SEL_MenuHandler selector) {
-    const float baseScale = diameter / BASE_REF;
+    const float baseScale = diameter / (BASE_REF * RENDER_BUG_FACTOR);
 
     auto node = CCNode::create();
     node->setContentSize({diameter, diameter});
@@ -90,7 +98,7 @@ CCMenuItemSpriteExtra* LinkIcon::createButton(float diameter, CCObject* target,
     // Icon container has default (0,0) anchor, so position its bottom-left
     // corner such that its scaled footprint ends up centered in the button.
     auto icon = createIcon();
-    const float iconScale = (diameter * 0.72f) / ICON_W;
+    const float iconScale = (diameter * 0.72f) / (ICON_W * RENDER_BUG_FACTOR);
     icon->setScale(iconScale);
     icon->setPosition({center.x - (ICON_W * iconScale) / 2.f,
                        center.y - (ICON_H * iconScale) / 2.f});
