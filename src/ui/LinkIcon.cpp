@@ -9,9 +9,6 @@ namespace {
 constexpr float ICON_W = 285.f;
 constexpr float ICON_H = 157.f;
 
-// The chain is a fixed color (not user-adjustable like the other parts).
-const ccColor3B CHAIN_COLOR = {255, 205, 40};
-
 // The base part-sprites (link-base-*.png) are authored so that, after
 // Geode's resource pipeline downsamples them, they land at this diameter -
 // i.e. setScale(diameter / BASE_REF) gives an exact final size.
@@ -26,7 +23,10 @@ CCNode* LinkIcon::createIcon() {
     // position as extracted from the source artwork:
     //   left square:  centered (77.5, 78)
     //   right square: centered (211.5, 78)
-    //   chain: centered (142.5, 80.5), behind everything else
+    //   chain: its anchor is offset to the point in the source crop that
+    //   lines up with the swap-circle's center, so positioning it there
+    //   (same point as the circle/arrows) aligns it correctly - the chain
+    //   image's own bounding box isn't centered on that point.
     //   swap-circle + arrows: centered (143, 79), at native size so the
     //   chain links stay visible on either side instead of being covered.
     auto container = CCNode::create();
@@ -43,8 +43,9 @@ CCNode* LinkIcon::createIcon() {
     container->addChild(right);
 
     auto chain = CCSprite::create("link-chain.png"_spr);
-    chain->setColor(CHAIN_COLOR);
-    chain->setPosition({142.5f, 80.5f});
+    chain->setColor(settingColor("icon-chain-color"));
+    chain->setAnchorPoint({0.482f, 0.302f});
+    chain->setPosition({143.f, 79.f});
     container->addChild(chain);
 
     auto middle = CCSprite::create("link-swap-circle.png"_spr);

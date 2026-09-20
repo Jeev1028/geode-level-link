@@ -59,6 +59,12 @@
 			"description": "Color of the right square in the mod's icon.",
 			"default": "#FF9F40"
 		},
+		"icon-chain-color": {
+			"type": "color",
+			"name": "Icon Chain Color",
+			"description": "Color of the chain links connecting the two squares.",
+			"default": "#FFCD28"
+		},
 		"icon-middle-color": {
 			"type": "color",
 			"name": "Icon Middle Color",
