@@ -9,10 +9,6 @@ namespace {
 constexpr float ICON_W = 285.f;
 constexpr float ICON_H = 157.f;
 
-// How much bigger the swap-circle/arrows render than their native size, so
-// they overlap onto the two squares instead of just sitting in the gap.
-constexpr float MIDDLE_SCALE = 1.45f;
-
 // The base part-sprites (link-base-*.png) are authored so that, after
 // Geode's resource pipeline downsamples them, they land at this diameter -
 // i.e. setScale(diameter / BASE_REF) gives an exact final size.
@@ -28,8 +24,8 @@ CCNode* LinkIcon::createIcon() {
     //   left square:  centered (77.5, 78)
     //   right square: centered (211.5, 78)
     //   chain: centered (142.5, 80.5), behind everything else
-    //   swap-circle + arrows: centered (143, 79), enlarged so they overlap
-    //   onto both squares instead of just filling the gap.
+    //   swap-circle + arrows: centered (143, 79), at native size so the
+    //   chain links stay visible on either side instead of being covered.
     auto container = CCNode::create();
     container->setContentSize({ICON_W, ICON_H});
 
@@ -49,12 +45,10 @@ CCNode* LinkIcon::createIcon() {
 
     auto middle = CCSprite::create("link-swap-circle.png"_spr);
     middle->setColor(settingColor("icon-middle-color"));
-    middle->setScale(MIDDLE_SCALE);
     middle->setPosition({143.f, 79.f});
     container->addChild(middle);
 
     auto arrows = CCSprite::create("link-swap-arrows.png"_spr);
-    arrows->setScale(MIDDLE_SCALE);
     arrows->setPosition({143.f, 79.f});
     container->addChild(arrows);
 

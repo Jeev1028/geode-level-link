@@ -51,13 +51,13 @@
 			"type": "color",
 			"name": "Icon Left Color",
 			"description": "Color of the left square in the mod's icon.",
-			"default": "#2882E6"
+			"default": "#4DC8EA"
 		},
 		"icon-right-color": {
 			"type": "color",
 			"name": "Icon Right Color",
 			"description": "Color of the right square in the mod's icon.",
-			"default": "#46C85A"
+			"default": "#FF9F40"
 		},
 		"icon-middle-color": {
 			"type": "color",
