@@ -20,11 +20,11 @@ class $modify(LLEditLevelLayer, EditLevelLayer) {
         }
         if (!menu) return true;
 
-        // Our own bundled icon (resources/link-icon.png). See LevelInfoLayer.cpp
-        // for why the scale factor looks large - it corrects for how Geode's
-        // resource pipeline defines the sprite's 1x point size.
+        // Our own bundled icon (resources/link-icon.png). Scale calibrated
+        // against a screenshot: the ~88px-diameter neighboring circular
+        // buttons vs. our ~165px-tall badge at scale 1.3.
         auto spr = CCSprite::create("link-icon.png"_spr);
-        spr->setScale(1.3f);
+        spr->setScale(0.65f);
         auto btn = CCMenuItemSpriteExtra::create(spr, this,
                                                  menu_selector(LLEditLevelLayer::onLevelLink));
         btn->setID("level-link-button"_spr);
