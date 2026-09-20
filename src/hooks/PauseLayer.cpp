@@ -18,9 +18,11 @@ class $modify(LLPauseLayer, PauseLayer) {
         auto menu = this->getChildByID("right-button-menu");
         if (!menu) return;
 
-        // Our own bundled icon (resources/link-icon.png), not a borrowed GD sprite.
+        // Our own bundled icon (resources/link-icon.png). See LevelInfoLayer.cpp
+        // for why the scale factor looks large - it corrects for how Geode's
+        // resource pipeline defines the sprite's 1x point size.
         auto spr = CCSprite::create("link-icon.png"_spr);
-        spr->setScale(0.2f);
+        spr->setScale(1.6f);
         auto btn = CCMenuItemSpriteExtra::create(
             spr, this, menu_selector(LLPauseLayer::onSwitchLinked));
         btn->setID("switch-linked-level"_spr);

@@ -21,9 +21,12 @@ class $modify(LLLevelInfoLayer, LevelInfoLayer) {
             this->addChildAtPosition(menu, Anchor::Left, ccp(28.f, 0.f), false);
         }
 
-        // Our own bundled icon (resources/link-icon.png), not a borrowed GD sprite.
+        // Our own bundled icon (resources/link-icon.png). Geode's resource
+        // pipeline treats the packaged "normal" (non-hd/uhd) file's pixel size
+        // as the sprite's 1x point size, which for this asset is small - scale
+        // up to roughly match the neighboring circular buttons.
         auto spr = CCSprite::create("link-icon.png"_spr);
-        spr->setScale(0.15f);
+        spr->setScale(1.3f);
         auto btn = CCMenuItemSpriteExtra::create(spr, this,
                                                  menu_selector(LLLevelInfoLayer::onLevelLink));
         btn->setID("level-link-button"_spr);
