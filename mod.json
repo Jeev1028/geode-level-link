@@ -20,7 +20,8 @@
 	},
 	"resources": {
 		"sprites": [
-			"resources/link-square.png",
+			"resources/link-square-left.png",
+			"resources/link-square-right.png",
 			"resources/link-swap-circle.png",
 			"resources/link-chain.png",
 			"resources/link-swap-arrows.png",

@@ -4,9 +4,10 @@ using namespace geode::prelude;
 
 namespace {
 
-// Design-space size of the icon composite (see the layout comment below).
-constexpr float ICON_W = 280.f;
-constexpr float ICON_H = 140.f;
+// Design-space size of the icon composite, matching the part-sprites' real
+// layout as extracted from the source artwork (see the positions below).
+constexpr float ICON_W = 285.f;
+constexpr float ICON_H = 157.f;
 
 // How much bigger the swap-circle/arrows render than their native size, so
 // they overlap onto the two squares instead of just sitting in the gap.
@@ -22,38 +23,39 @@ ccColor3B settingColor(const char* key) { return Mod::get()->getSettingValue<ccC
 }  // namespace
 
 CCNode* LinkIcon::createIcon() {
-    // Layout (in design units, origin bottom-left):
-    //   left square:  centered (60, 70)
-    //   right square: centered (220, 70)
-    //   chain: centered (140, 70), behind everything else
-    //   swap-circle + arrows: also centered (140, 70), enlarged so they
-    //   overlap onto both squares instead of just filling the gap.
+    // Layout (design units, origin bottom-left) - matches each part's real
+    // position as extracted from the source artwork:
+    //   left square:  centered (77.5, 78)
+    //   right square: centered (211.5, 78)
+    //   chain: centered (142.5, 80.5), behind everything else
+    //   swap-circle + arrows: centered (143, 79), enlarged so they overlap
+    //   onto both squares instead of just filling the gap.
     auto container = CCNode::create();
     container->setContentSize({ICON_W, ICON_H});
 
-    auto left = CCSprite::create("link-square.png"_spr);
+    auto left = CCSprite::create("link-square-left.png"_spr);
     left->setColor(settingColor("icon-left-color"));
-    left->setPosition({60.f, 70.f});
+    left->setPosition({77.5f, 78.f});
     container->addChild(left);
 
-    auto right = CCSprite::create("link-square.png"_spr);
+    auto right = CCSprite::create("link-square-right.png"_spr);
     right->setColor(settingColor("icon-right-color"));
-    right->setPosition({220.f, 70.f});
+    right->setPosition({211.5f, 78.f});
     container->addChild(right);
 
     auto chain = CCSprite::create("link-chain.png"_spr);
-    chain->setPosition({140.f, 70.f});
+    chain->setPosition({142.5f, 80.5f});
     container->addChild(chain);
 
     auto middle = CCSprite::create("link-swap-circle.png"_spr);
     middle->setColor(settingColor("icon-middle-color"));
     middle->setScale(MIDDLE_SCALE);
-    middle->setPosition({140.f, 70.f});
+    middle->setPosition({143.f, 79.f});
     container->addChild(middle);
 
     auto arrows = CCSprite::create("link-swap-arrows.png"_spr);
     arrows->setScale(MIDDLE_SCALE);
-    arrows->setPosition({140.f, 70.f});
+    arrows->setPosition({143.f, 79.f});
     container->addChild(arrows);
 
     return container;
