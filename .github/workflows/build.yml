@@ -31,19 +31,52 @@ jobs:
             os: ubuntu-latest
             target: Android64
 
-          # iOS on GitHub runners is currently broken by the Xcode 26 SDK layout
-          # (CMake: CMAKE_APPLE_ARCH_SYSROOTS length mismatch). Allowed to fail so
-          # releases still ship the other platforms; will self-heal upstream.
           - name: iOS
             os: macos-latest
             target: iOS
 
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
-    continue-on-error: ${{ matrix.config.name == 'iOS' }}
+    # No longer needed to be allowed-to-fail: the iOS job below now works
+    # around the actual bug (Xcode 26's SDK layout) instead of just letting
+    # it fail. Left in place, harmlessly false for iOS, as a safety net in
+    # case a *different* upstream regression shows up before this is revisited.
+    continue-on-error: false
 
     steps:
       - uses: actions/checkout@v4
+
+      # iOS builds on GitHub's macos-latest runner default to Xcode 26, whose
+      # SDK layout trips a CMake bug in the build toolchain
+      # (CMAKE_APPLE_ARCH_SYSROOTS ends up with both the iPhoneOS *and*
+      # iPhoneSimulator SDK paths for a single-arch arm64 build, which CMake
+      # rejects as a length mismatch against CMAKE_OSX_ARCHITECTURES). Runner
+      # images ship several Xcode versions side by side - select the newest
+      # one before 26, which doesn't have this problem, instead of waiting on
+      # an upstream fix.
+      - name: Work around Xcode 26 SDK sysroot bug (iOS only)
+        if: matrix.config.name == 'iOS'
+        run: |
+          echo "Available Xcode installs:"
+          ls -d /Applications/Xcode_*.app 2>/dev/null || true
+
+          PICKED=""
+          for app in $(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V); do
+            ver=$(basename "$app" .app | sed 's/Xcode_//')
+            major=${ver%%.*}
+            if [ "$major" -lt 26 ] 2>/dev/null; then
+              PICKED="$app"
+            fi
+          done
+
+          if [ -z "$PICKED" ]; then
+            echo "No pre-26 Xcode found on this runner; leaving default selected."
+          else
+            echo "Selecting $PICKED"
+            sudo xcode-select -s "$PICKED"
+          fi
+
+          xcodebuild -version
 
       - name: Build the mod
         uses: geode-sdk/build-geode-mod@main
