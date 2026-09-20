@@ -9,6 +9,9 @@ namespace {
 constexpr float ICON_W = 285.f;
 constexpr float ICON_H = 157.f;
 
+// The chain is a fixed color (not user-adjustable like the other parts).
+const ccColor3B CHAIN_COLOR = {255, 205, 40};
+
 // The base part-sprites (link-base-*.png) are authored so that, after
 // Geode's resource pipeline downsamples them, they land at this diameter -
 // i.e. setScale(diameter / BASE_REF) gives an exact final size.
@@ -40,6 +43,7 @@ CCNode* LinkIcon::createIcon() {
     container->addChild(right);
 
     auto chain = CCSprite::create("link-chain.png"_spr);
+    chain->setColor(CHAIN_COLOR);
     chain->setPosition({142.5f, 80.5f});
     container->addChild(chain);
 
