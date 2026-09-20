@@ -37,47 +37,32 @@ jobs:
 
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
-    # No longer needed to be allowed-to-fail: the iOS job below now works
-    # around the actual bug (Xcode 26's SDK layout) instead of just letting
-    # it fail. Left in place, harmlessly false for iOS, as a safety net in
-    # case a *different* upstream regression shows up before this is revisited.
-    continue-on-error: false
+    # iOS is still allowed to fail: the workaround below is our best current
+    # guess at the actual upstream bug (confirmed via
+    # github.com/geode-sdk/build-geode-mod/issues/45, still open/unresolved
+    # upstream, and reproduced locally against every Xcode 26.0-26.6 point
+    # release - it's not version-specific). If it turns out not to fully
+    # fix it, releases should still ship the other four platforms.
+    continue-on-error: ${{ matrix.config.name == 'iOS' }}
 
     steps:
       - uses: actions/checkout@v4
-
-      # iOS builds on GitHub's macos-latest runner default to the newest
-      # installed Xcode 26.x, whose SDK layout trips a CMake bug in the build
-      # toolchain (CMAKE_APPLE_ARCH_SYSROOTS ends up with both the iPhoneOS
-      # *and* iPhoneSimulator SDK paths for a single-arch arm64 build, which
-      # CMake rejects as a length mismatch against CMAKE_OSX_ARCHITECTURES).
-      # As of writing, every Xcode install on this runner image is some
-      # 26.x point release (no pre-26 option exists anymore), so fall back
-      # to the *earliest* installed 26.x instead - the bug traces back to a
-      # later point release's SDK renumbering (Xcode 26.6 ships an SDK
-      # labeled "iPhoneOS26.5"), so an earlier point release doesn't hit it.
-      - name: Work around Xcode 26 SDK sysroot bug (iOS only)
-        if: matrix.config.name == 'iOS'
-        run: |
-          echo "Available Xcode installs:"
-          ls -d /Applications/Xcode_*.app 2>/dev/null || true
-
-          PICKED=$(ls -d /Applications/Xcode_*.app 2>/dev/null | sort -V | head -1)
-
-          if [ -z "$PICKED" ]; then
-            echo "No Xcode install found; leaving default selected."
-          else
-            echo "Selecting $PICKED"
-            sudo xcode-select -s "$PICKED"
-          fi
-
-          xcodebuild -version
 
       - name: Build the mod
         uses: geode-sdk/build-geode-mod@main
         with:
           combine: true
           target: ${{ matrix.config.target }}
+          # iOS-only: recent CMake defaults CMAKE_OSX_SYSROOT to *both* the
+          # iPhoneOS and iPhoneSimulator SDK paths when CMAKE_SYSTEM_NAME=iOS
+          # is set without an explicit sysroot, then rejects that 2-entry
+          # list as a length mismatch against the single-arch (arm64)
+          # CMAKE_OSX_ARCHITECTURES during fmt's compiler-flag check. Forcing
+          # a single sysroot here pre-empts that auto-detection - this input
+          # is appended after the action's own -DGEODE_TARGET_PLATFORM=iOS,
+          # so it wins on the CMake command line for other platforms too
+          # (empty string here is a no-op).
+          configure-args: ${{ matrix.config.name == 'iOS' && '-DCMAKE_OSX_SYSROOT=iphoneos' || '' }}
 
   package:
     name: Package builds
