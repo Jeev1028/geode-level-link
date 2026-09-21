@@ -2,7 +2,16 @@ cmake_minimum_required(VERSION 3.21)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
+# Universal (arm64 + x86_64) is only meaningful for an actual macOS binary.
+# Forcing it unconditionally here breaks iOS builds: this runs before
+# project(), i.e. before Geode's own cmake/Platform.cmake gets a chance to
+# correctly set CMAKE_OSX_ARCHITECTURES to just "arm64" for iOS - so
+# project()'s first compiler check ends up trying to link against the
+# iPhoneOS SDK (device-only, arm64 only, no x86_64 slice at all) while still
+# asking for both architectures, which fails immediately.
+if (NOT GEODE_TARGET_PLATFORM STREQUAL "iOS")
+	set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
+endif()
 set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13 CACHE STRING "Minimum OS X deployment version")
 
 project(LevelLink VERSION 1.0.0)
