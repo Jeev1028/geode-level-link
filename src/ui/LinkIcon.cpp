@@ -32,13 +32,24 @@ ccColor3B settingColor(const char* key) { return Mod::get()->getSettingValue<ccC
 // highlights), which is what was showing up as "pixelated" even at 1080p.
 // Generating mipmaps and sampling trilinearly fixes that the same way
 // vanilla GD textures already look smooth when scaled down.
+//
+// Desktop-only (confirmed fine on Windows via real screenshots): our source
+// PNGs are not power-of-two (800x800, 328x328, etc.), and mipmap generation
+// for NPOT textures is unreliable specifically on OpenGL ES (iOS/Android) -
+// some GPU drivers silently produce garbage/solid-black textures instead of
+// erroring. Confirmed via a real iPad screenshot: the whole button rendered
+// as a solid black square there. Desktop GL doesn't have this restriction.
 void smoothMinification(CCSprite* sprite) {
+#if defined(GEODE_IS_WINDOWS) || defined(GEODE_IS_MACOS)
     if (!sprite) return;
     auto tex = sprite->getTexture();
     if (!tex) return;
     tex->generateMipmap();
     ccTexParams params = {GL_LINEAR_MIPMAP_LINEAR, GL_LINEAR, GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE};
     tex->setTexParameters(&params);
+#else
+    (void)sprite;
+#endif
 }
 
 }  // namespace
