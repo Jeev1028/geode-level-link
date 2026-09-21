@@ -37,19 +37,6 @@ jobs:
 
     name: ${{ matrix.config.name }}
     runs-on: ${{ matrix.config.os }}
-    # iOS on GitHub runners is currently broken by a genuine upstream bug:
-    # CMake computes CMAKE_APPLE_ARCH_SYSROOTS as [iPhoneOS SDK;
-    # iPhoneSimulator SDK] against Xcode 26's SDK layout, then rejects it as
-    # a length mismatch against the single-arch (arm64) CMAKE_OSX_ARCHITECTURES
-    # during fmt's compiler-flag check. Confirmed via
-    # github.com/geode-sdk/build-geode-mod/issues/45 (open, unresolved
-    # upstream) and by reproducing it locally against every Xcode 26.0-26.6
-    # point release currently on the runner image (not version-specific) and
-    # against an explicit -DCMAKE_OSX_SYSROOT=iphoneos override (no effect -
-    # CMAKE_APPLE_ARCH_SYSROOTS isn't actually derived from that variable).
-    # Allowed to fail so releases still ship the other four platforms; will
-    # self-heal once fixed upstream in CMake or build-geode-mod.
-    continue-on-error: ${{ matrix.config.name == 'iOS' }}
 
     steps:
       - uses: actions/checkout@v4
